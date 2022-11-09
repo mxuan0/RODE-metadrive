@@ -23,9 +23,9 @@ Pillow==6.2.0
 pluggy==0.7.1
 portpicker==1.2.0
 probscale==0.2.3
-protobuf==3.6.1
+protobuf
 py==1.6.0
-pygame==1.9.4
+pygame>=1.9.4
 pyparsing==2.2.2
 pysc2==3.0.0
 pytest==3.8.2
@@ -39,7 +39,7 @@ six==1.11.0
 sk-video==1.1.10
 snakeviz==1.0.0
 tensorboard-logger==0.1.0
-torch~=1.11.0
+torch~=1.10.0
 torchvision==0.2.1
 tornado==5.1.1
 urllib3==1.24.2
@@ -48,6 +48,5 @@ whichcraft==0.5.2
 wrapt==1.10.11
 git+https://github.com/oxwhirl/smac.git
 
-metadrive~=1.4.35
 sklearn~=0.0
 scikit-learn~=0.21.3
