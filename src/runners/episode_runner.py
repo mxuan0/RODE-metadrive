@@ -176,8 +176,6 @@ class EpisodeRunner:
         cur_returns = self.test_returns if test_mode else self.train_returns
         # pdb.set_trace()
         log_prefix = "test_" if test_mode else ""
-        for k in set(cur_stats) | set(env_info):
-            cur_stats.get(k, 0) + env_info.get(k, 0)
 
         cur_stats.update({k: cur_stats.get(k, 0) + env_info.get(k, 0) for k in set(cur_stats) | set(env_info)})
         cur_stats["n_episodes"] = 1 + cur_stats.get("n_episodes", 0)
