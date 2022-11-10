@@ -97,5 +97,7 @@ if __name__ == '__main__':
     #
     # ex.run_commandline(params)
     # my_main(_run, config_dict, logger)
+    np.random.seed(config_dict["seed"])
+    th.manual_seed(config_dict["seed"])
 
     run2(config_dict)
