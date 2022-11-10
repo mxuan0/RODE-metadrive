@@ -76,7 +76,8 @@ class EpisodeRunner:
             all_roles = []
 
         while not terminated:
-
+            import pdb
+            # pdb.set_trace()
             pre_transition_data = {
                 "state": [self.env.get_state()],
                 "avail_actions": [self.env.get_avail_actions()],
@@ -87,9 +88,11 @@ class EpisodeRunner:
                 # These outputs are designed for SMAC
                 ally_info, enemy_info = self.env.get_structured_state()
                 replay_data.append([ally_info, enemy_info])
-
-            self.batch.update(pre_transition_data, ts=self.t)
-
+            try:
+                self.batch.update(pre_transition_data, ts=self.t)
+            except Exception as e:
+                pdb.set_trace()
+                # self.batch.update(pre_transition_data, ts=self.t)
             # Pass the entire batch of experiences up till now to the agents
             # Receive the actions for each agent at this timestep in a batch of size 1
             actions, roles, role_avail_actions = self.mac.select_actions(self.batch, t_ep=self.t,
@@ -135,7 +138,7 @@ class EpisodeRunner:
                     pic_name = os.path.join(save_path, str(self.t) + '.png')
                     plt.savefig(pic_name)
                     plt.close()
-
+            # pdb.set_trace()
             reward, terminated, env_info = self.env.step(actions[0])
             episode_return += reward
 
@@ -151,12 +154,12 @@ class EpisodeRunner:
 
             self.t += 1
 
-        last_data = {
-            "state": [self.env.get_state()],
-            "avail_actions": [self.env.get_avail_actions()],
-            "obs": [self.env.get_obs()]
-        }
-        self.batch.update(last_data, ts=self.t)
+        # last_data = {
+        #     "state": [self.env.get_state()],
+        #     "avail_actions": [self.env.get_avail_actions()],
+        #     "obs": [self.env.get_obs()]
+        # }
+        # self.batch.update(last_data, ts=self.t)
 
         # if self.verbose:
         #     # These outputs are designed for SMAC
@@ -164,12 +167,18 @@ class EpisodeRunner:
         #     replay_data.append([ally_info, enemy_info])
 
         # Select actions in the last stored state
+
+        self.t -= 1
         actions, roles, role_avail_actions = self.mac.select_actions(self.batch, t_ep=self.t, t_env=self.t_env, test_mode=test_mode)
         self.batch.update({"actions": actions, "roles": roles, "role_avail_actions": role_avail_actions}, ts=self.t)
 
         cur_stats = self.test_stats if test_mode else self.train_stats
         cur_returns = self.test_returns if test_mode else self.train_returns
+        # pdb.set_trace()
         log_prefix = "test_" if test_mode else ""
+        for k in set(cur_stats) | set(env_info):
+            cur_stats.get(k, 0) + env_info.get(k, 0)
+
         cur_stats.update({k: cur_stats.get(k, 0) + env_info.get(k, 0) for k in set(cur_stats) | set(env_info)})
         cur_stats["n_episodes"] = 1 + cur_stats.get("n_episodes", 0)
         cur_stats["ep_length"] = self.t + cur_stats.get("ep_length", 0)

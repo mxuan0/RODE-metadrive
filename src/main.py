@@ -11,19 +11,19 @@ import torch as th
 from utils.logging import get_logger
 import yaml
 
-from run import run
+from run import run, run2
 
 SETTINGS['CAPTURE_MODE'] = "fd" # set to "no" if you want to see stdout/stderr in console
 logger = get_logger()
 
-ex = Experiment("pymarl")
-ex.logger = logger
-ex.captured_out_filter = apply_backspaces_and_linefeeds
+# ex = Experiment("pymarl")
+# ex.logger = logger
+# ex.captured_out_filter = apply_backspaces_and_linefeeds
 
 results_path = os.path.join(dirname(dirname(abspath(__file__))), "results")
 
 
-@ex.main
+# @ex.main
 def my_main(_run, _config, _log):
     # Setting the random seed throughout the modules
     config = config_copy(_config)
@@ -88,12 +88,14 @@ if __name__ == '__main__':
     config_dict = recursive_dict_update(config_dict, alg_config)
 
     # now add all the config to sacred
-    ex.add_config(config_dict)
+    # ex.add_config(config_dict)
+    #
+    # # Save to disk by default for sacred
+    # logger.info("Saving to FileStorageObserver in results/sacred.")
+    # file_obs_path = os.path.join(results_path, "sacred")
+    # ex.observers.append(FileStorageObserver.create(file_obs_path))
+    #
+    # ex.run_commandline(params)
+    # my_main(_run, config_dict, logger)
 
-    # Save to disk by default for sacred
-    logger.info("Saving to FileStorageObserver in results/sacred.")
-    file_obs_path = os.path.join(results_path, "sacred")
-    ex.observers.append(FileStorageObserver.create(file_obs_path))
-
-    ex.run_commandline(params)
-
+    run2(config_dict)

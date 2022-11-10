@@ -13,7 +13,7 @@ from components.transforms import OneHot
 from controllers import REGISTRY as mac_REGISTRY
 from learners import REGISTRY as le_REGISTRY
 from runners import REGISTRY as r_REGISTRY
-from utils.logging import Logger
+from utils.logging import Logger, get_logger
 from utils.timehelper import time_left, time_str
 
 import pickle
@@ -64,6 +64,31 @@ def run(_run, _config, _log):
     # Making sure framework really exits
     os._exit(os.EX_OK)
 
+def run2(_config):
+    # check args sanity
+    _config = args_sanity_check(_config)
+
+    args = SN(**_config)
+    args.device = "cuda" if args.use_cuda else "cpu"
+
+    # Run and train
+    logger = Logger(get_logger())
+    run_sequential(args=args, logger=logger)
+
+    # Clean up after finishing
+    print("Exiting Main")
+
+    print("Stopping all threads")
+    for t in threading.enumerate():
+        if t.name != "MainThread":
+            print("Thread {} is alive! Is daemon: {}".format(t.name, t.daemon))
+            t.join(timeout=1)
+            print("Thread joined")
+
+    print("Exiting script")
+
+    # Making sure framework really exits
+    os._exit(os.EX_OK)
 
 def evaluate_sequential(args, runner):
     all_roles = np.array([0 for _ in range(runner.mac.n_roles)])
@@ -104,6 +129,8 @@ def run_sequential(args, logger):
     args.state_shape = env_info["state_shape"]
     args.obs_shape = env_info["obs_shape"]
 
+    import pdb
+    # pdb.set_trace()
     # Default/Base scheme
     scheme = {
         "state": {"vshape": env_info["state_shape"]},
@@ -234,13 +261,13 @@ def run_sequential(args, logger):
     runner.close_env()
     logger.console_logger.info("Finished Training")
 
-
-def args_sanity_check(config, _log):
+def args_sanity_check(config, _log=None):
     # set CUDA flags
     # config["use_cuda"] = True # Use cuda whenever possible!
     if config["use_cuda"] and not th.cuda.is_available():
         config["use_cuda"] = False
-        _log.warning("CUDA flag use_cuda was switched OFF automatically because no CUDA devices are available!")
+        if _log is not None:
+            _log.warning("CUDA flag use_cuda was switched OFF automatically because no CUDA devices are available!")
 
     if config["test_nepisode"] < config["batch_size_run"]:
         config["test_nepisode"] = config["batch_size_run"]
