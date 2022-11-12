@@ -26,16 +26,16 @@ class Logger:
     def log_stat(self, key, value, t, to_sacred=True):
         self.stats[key].append((t, value))
 
-        if self.use_tb:
-            self.tb_logger(key, value, t)
+        # if self.use_tb:
+        #     self.tb_logger(key, value, t)
 
-        if self.use_sacred and to_sacred:
-            if key in self.sacred_info:
-                self.sacred_info["{}_T".format(key)].append(t)
-                self.sacred_info[key].append(value)
-            else:
-                self.sacred_info["{}_T".format(key)] = [t]
-                self.sacred_info[key] = [value]
+        # if self.use_sacred and to_sacred:
+        #     if key in self.sacred_info:
+        #         self.sacred_info["{}_T".format(key)].append(t)
+        #         self.sacred_info[key].append(value)
+        #     else:
+        #         self.sacred_info["{}_T".format(key)] = [t]
+        #         self.sacred_info[key] = [value]
 
     def print_recent_stats(self):
         log_str = "Recent Stats | t_env: {:>10} | Episode: {:>8}\n".format(*self.stats["episode"][-1])
@@ -59,7 +59,7 @@ def get_logger():
     formatter = logging.Formatter('[%(levelname)s %(asctime)s] %(name)s %(message)s', '%H:%M:%S')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
-    logger.setLevel('DEBUG')
+    logger.setLevel('INFO')
 
     return logger
 

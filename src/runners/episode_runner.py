@@ -8,7 +8,7 @@ import os
 import logging
 import shutil
 import copy
-
+import pdb
 
 class EpisodeRunner:
 
@@ -76,7 +76,6 @@ class EpisodeRunner:
             all_roles = []
 
         while not terminated:
-            import pdb
             # pdb.set_trace()
             pre_transition_data = {
                 "state": [self.env.get_state()],
@@ -154,12 +153,12 @@ class EpisodeRunner:
 
             self.t += 1
 
-        # last_data = {
-        #     "state": [self.env.get_state()],
-        #     "avail_actions": [self.env.get_avail_actions()],
-        #     "obs": [self.env.get_obs()]
-        # }
-        # self.batch.update(last_data, ts=self.t)
+        last_data = {
+            "state": [self.env.get_state()],
+            "avail_actions": [self.env.get_avail_actions()],
+            "obs": [self.env.get_obs()]
+        }
+        self.batch.update(last_data, ts=self.t)
 
         # if self.verbose:
         #     # These outputs are designed for SMAC
@@ -168,7 +167,6 @@ class EpisodeRunner:
 
         # Select actions in the last stored state
 
-        self.t -= 1
         actions, roles, role_avail_actions = self.mac.select_actions(self.batch, t_ep=self.t, t_env=self.t_env, test_mode=test_mode)
         self.batch.update({"actions": actions, "roles": roles, "role_avail_actions": role_avail_actions}, ts=self.t)
 

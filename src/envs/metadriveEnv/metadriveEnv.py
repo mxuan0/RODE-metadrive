@@ -28,7 +28,7 @@ class MetaDriveEnv(MultiAgentEnv):
                  discrete_throttle_dim,
                  discrete_action=True,
                  env_name="roundabout",
-                 episode_limit=150
+                 episode_limit=200
                  ):
         config = dict(discrete_steering_dim=discrete_steering_dim,
                       discrete_throttle_dim=discrete_throttle_dim,
@@ -41,12 +41,15 @@ class MetaDriveEnv(MultiAgentEnv):
         self.episode_limit = episode_limit
 
         self._episode_steps = 0
+        self._last_obs = None
+        self._cur_obs = None
 
     def step(self, actions):
         #assume actions is a list
         actions = actions.tolist()
         actions_multidrive = {'agent%d'%i : actions[i] for i in range(len(actions))}
         o, r, d, i = self.env.step(actions_multidrive)
+        self._last_obs = self._cur_obs
 
         self._episode_steps += 1
 
@@ -62,10 +65,13 @@ class MetaDriveEnv(MultiAgentEnv):
         return env_reward, env_done, {}
 
     def get_obs_agent(self, agent_id):
-        return self.env.observations['agent%d'%agent_id].observe(self.env.vehicles['agent%d'%agent_id])
+        if 'agent%d'%agent_id in self.env.vehicles:
+            return self.env.observations['agent%d'%agent_id].observe(self.env.vehicles['agent%d'%agent_id])
+        return self._last_obs[agent_id]
 
     def get_obs(self):
-        return [self.get_obs_agent(agent_id) for agent_id in range(len(self.env.vehicles))]
+        self._cur_obs = [self.get_obs_agent(agent_id) for agent_id in range(self.n_agents)]
+        return self._cur_obs
 
     def get_obs_size(self):
         return self.env.observations['agent0'].observation_space.shape[0]
