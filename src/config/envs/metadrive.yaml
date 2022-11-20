@@ -4,6 +4,7 @@ env_args:
   discrete_steering_dim: 5
   discrete_throttle_dim: 5
   discrete_action: True
+  env_name: "bottleneck"
 
 test_greedy: True
 test_nepisode: 32
