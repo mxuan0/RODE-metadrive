@@ -1,4 +1,6 @@
 import copy
+import pdb
+
 from components.episode_buffer import EpisodeBatch
 from modules.mixers.vdn import VDNMixer
 from modules.mixers.qmix import QMixer
@@ -41,7 +43,7 @@ class RODELearner:
             self.params += list(self.role_mixer.parameters())
             self.target_role_mixer = copy.deepcopy(self.role_mixer)
 
-        self.optimiser = RMSprop(params=self.params, lr=args.lr, alpha=args.optim_alpha, eps=args.optim_eps)
+        self.optimiser = RMSprop(params=self.params, lr=args.lr/10, alpha=args.optim_alpha, eps=args.optim_eps)
 
         # a little wasteful to deepcopy (e.g. duplicates action selector), but should work for any MAC
         self.target_mac = copy.deepcopy(mac)
@@ -227,13 +229,14 @@ class RODELearner:
             self.last_target_update_episode = episode_num
 
         if t_env - self.log_stats_t >= self.args.learner_log_interval:
+            # pdb.set_trace()
             self.logger.log_stat("loss", (loss - role_loss).item(), t_env)
             self.logger.log_stat("role_loss", role_loss.item(), t_env)
-            self.logger.log_stat("grad_norm", grad_norm, t_env)
+            self.logger.log_stat("grad_norm", grad_norm.item(), t_env)
             if pred_obs_loss is not None:
                 self.logger.log_stat("pred_obs_loss", pred_obs_loss.item(), t_env)
                 self.logger.log_stat("pred_r_loss", pred_r_loss.item(), t_env)
-                self.logger.log_stat("action_encoder_grad_norm", pred_grad_norm, t_env)
+                self.logger.log_stat("action_encoder_grad_norm", pred_grad_norm.item(), t_env)
             mask_elems = mask.sum().item()
             self.logger.log_stat("td_error_abs", (masked_td_error.abs().sum().item() / mask_elems), t_env)
             self.logger.log_stat("q_taken_mean",
