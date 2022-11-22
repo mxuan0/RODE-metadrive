@@ -1,6 +1,7 @@
 from collections import defaultdict
 import logging
 import numpy as np
+import matplotlib.pyplot as plt
 
 class Logger:
     def __init__(self, console_logger):
@@ -49,6 +50,19 @@ class Logger:
             log_str += "{:<25}{:>8}".format(k + ":", item)
             log_str += "\n" if i % 4 == 0 else "\t"
         self.console_logger.info(log_str)
+
+
+    def save_plot(self, path):
+
+        for k, v in self.stats.items():
+            if k == "episode":
+                continue
+            steps = [x[0] for x in v]
+            values = [x[1] for x in v]
+
+            plt.figure()
+            plt.plot(steps, values)
+            plt.savefig("{}/{}.png".format(path, k), dpi=500)
 
 
 # set up a custom logger

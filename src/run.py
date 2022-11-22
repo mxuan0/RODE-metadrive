@@ -163,6 +163,7 @@ def run_sequential(args, logger):
     learner = le_REGISTRY[args.learner](mac, buffer.scheme, logger, args)
 
     if args.use_cuda:
+        print("Learner is deployed to GPU")
         learner.cuda()
 
     if args.checkpoint_path != "":
@@ -218,7 +219,7 @@ def run_sequential(args, logger):
         print(runner.t_env)
         if buffer.can_sample(args.batch_size):
             episode_sample = buffer.sample(args.batch_size)
-
+            print('can sample')
             # Truncate batch to only filled timesteps
             max_ep_t = episode_sample.max_t_filled()
             episode_sample = episode_sample[:, :max_ep_t]
@@ -260,6 +261,9 @@ def run_sequential(args, logger):
             last_log_T = runner.t_env
 
     runner.close_env()
+    stats_save_path = os.path.join(args.local_results_path, "figure", args.unique_token)
+    os.makedirs(stats_save_path, exist_ok=True)
+    logger.save_plot(stats_save_path)
     logger.console_logger.info("Finished Training")
 
 def args_sanity_check(config, _log=None):
