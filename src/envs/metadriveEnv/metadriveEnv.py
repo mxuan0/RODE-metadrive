@@ -28,11 +28,13 @@ class MetaDriveEnv(MultiAgentEnv):
                  discrete_throttle_dim,
                  discrete_action=True,
                  env_name="roundabout",
+                 allow_respawn=False,
                  episode_limit=200
                  ):
         config = dict(discrete_steering_dim=discrete_steering_dim,
                       discrete_throttle_dim=discrete_throttle_dim,
-                      discrete_action=discrete_action)
+                      discrete_action=discrete_action,
+                      allow_respawn=allow_respawn)
 
         self.env = envs_classes[env_name](config)
 
@@ -47,8 +49,19 @@ class MetaDriveEnv(MultiAgentEnv):
     def step(self, actions):
         #assume actions is a list
         actions = actions.tolist()
-        actions_multidrive = {'agent%d'%i : actions[i] for i in range(len(actions))}
-        o, r, d, i = self.env.step(actions_multidrive)
+        # actions_multidrive = {'agent%d'%i : actions[i] for i in range(len(actions))}
+        actions_multidrive = {}
+        for i in range(len(actions)):
+            if 'agent%d' % i in self.env.vehicles:
+                actions_multidrive['agent%d' % i] = actions[i]
+        # actions_multidrive = {'agent%d' % i: i for i in range(len(actions))}
+        #pdb.set_trace()
+
+        try:
+            o, r, d, i = self.env.step(actions_multidrive)
+        except Exception:
+            pdb.set_trace()
+            o, r, d, i = self.env.step(actions_multidrive)
         self._last_obs = self._cur_obs
 
         self._episode_steps += 1
@@ -58,8 +71,8 @@ class MetaDriveEnv(MultiAgentEnv):
             env_reward += agent_reward
 
         env_done = False
-        for agent, agent_done in d.items():
-            env_done = env_done or agent_done
+        # for agent, agent_done in d.items():
+        #     env_done = env_done or agent_done
         env_done = env_done or self._episode_steps >= self.episode_limit
 
         return env_reward, env_done, {}

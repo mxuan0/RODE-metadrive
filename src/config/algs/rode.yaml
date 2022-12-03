@@ -33,11 +33,11 @@ role: 'dot'
 role_selector: 'dot'
 bi_opt: False
 
-n_role_clusters: 6
-role_interval: 5
+n_role_clusters: 5
+role_interval: 1
 state_latent_dim: 32
 action_latent_dim: 20
-role_action_spaces_update_start: 50000
+role_action_spaces_update_start: 9000
 
 # for interpretability
 verbose: False
