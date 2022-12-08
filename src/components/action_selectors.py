@@ -1,6 +1,6 @@
 import torch as th
 from torch.distributions import Categorical
-from .epsilon_schedules import DecayThenFlatSchedule
+from .epsilon_schedules import DecayThenFlatScheduleRODE, DecayThenFlatSchedule
 
 REGISTRY = {}
 
@@ -70,7 +70,7 @@ class SoftEpsilonGreedyActionSelector():
     def __init__(self, args):
         self.args = args
 
-        self.schedule = DecayThenFlatSchedule(args.epsilon_start, args.epsilon_finish, args.epsilon_anneal_time,
+        self.schedule = DecayThenFlatScheduleRODE(args.epsilon_start, args.epsilon_finish, args.epsilon_anneal_time,
                                               args.epsilon_anneal_time_exp,
                                               args.role_action_spaces_update_start,
                                               decay="linear")

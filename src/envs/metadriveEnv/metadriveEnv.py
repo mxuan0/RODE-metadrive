@@ -24,13 +24,14 @@ envs_classes = dict(
 class MetaDriveEnv(MultiAgentEnv):
     def __init__(
             self,
-                 discrete_steering_dim,
-                 discrete_throttle_dim,
-                 discrete_action=True,
-                 env_name="roundabout",
-                 allow_respawn=False,
-                 episode_limit=200
-                 ):
+            discrete_steering_dim,
+            discrete_throttle_dim,
+            discrete_action=True,
+            env_name="roundabout",
+            allow_respawn=True,
+            episode_limit=200,
+            global_termination=False
+            ):
         config = dict(discrete_steering_dim=discrete_steering_dim,
                       discrete_throttle_dim=discrete_throttle_dim,
                       discrete_action=discrete_action,
@@ -46,19 +47,26 @@ class MetaDriveEnv(MultiAgentEnv):
         self._last_obs = None
         self._cur_obs = None
 
+        self.global_termination = global_termination
+
     def step(self, actions):
         #assume actions is a list
         actions = actions.tolist()
         # actions_multidrive = {'agent%d'%i : actions[i] for i in range(len(actions))}
-        actions_multidrive = {}
-        for i in range(len(actions)):
-            if 'agent%d' % i in self.env.vehicles:
-                actions_multidrive['agent%d' % i] = actions[i]
-        # actions_multidrive = {'agent%d' % i: i for i in range(len(actions))}
-        #pdb.set_trace()
+        # actions_multidrive = {}
+        # for i in range(len(actions)):
+        #     if 'agent%d' % i in self.env.vehicles:
+        #         actions_multidrive['agent%d' % i] = actions[i]
 
         try:
-            o, r, d, i = self.env.step(actions_multidrive)
+            assert(len(self.env.vehicles) == len(actions))
+        except Exception as e:
+            pdb.set_trace()
+        sorted_keys = sorted(self.env.vehicles.keys())
+        actions_multidrive = {sorted_keys[i]:actions[i] for i in range(len(actions))}
+
+        try:
+            self.o, r, d, i = self.env.step(actions_multidrive)
         except Exception:
             pdb.set_trace()
             o, r, d, i = self.env.step(actions_multidrive)
@@ -71,8 +79,9 @@ class MetaDriveEnv(MultiAgentEnv):
             env_reward += agent_reward
 
         env_done = False
-        # for agent, agent_done in d.items():
-        #     env_done = env_done or agent_done
+        if self.global_termination:
+            for agent, agent_done in d.items():
+                env_done = env_done or agent_done
         env_done = env_done or self._episode_steps >= self.episode_limit
 
         return env_reward, env_done, {}
@@ -83,9 +92,8 @@ class MetaDriveEnv(MultiAgentEnv):
         return self._last_obs[agent_id]
 
     def get_obs(self):
-        self._cur_obs = [self.get_obs_agent(agent_id) for agent_id in range(self.n_agents)]
-        return self._cur_obs
-
+        # return self._cur_obs
+        return [self.o[agent] for agent in sorted(self.o.keys())]
     def get_obs_size(self):
         return self.env.observations['agent0'].observation_space.shape[0]
 
@@ -118,7 +126,7 @@ class MetaDriveEnv(MultiAgentEnv):
         """ Returns initial observations and states"""
         self.env.reset()
         self._episode_steps = 0
-
+        self.o = {agent:self.env.observations[agent].observe(self.env.vehicles[agent]) for agent in self.env.vehicles}
     def render(self):
         self.env.render()
 

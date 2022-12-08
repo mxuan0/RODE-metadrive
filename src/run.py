@@ -211,9 +211,11 @@ def run_sequential(args, logger):
     logger.console_logger.info("Beginning training for {} timesteps".format(args.t_max))
     print(args)
     while runner.t_env <= args.t_max:
-
         # Run for a whole episode at a time
-        episode_batch = runner.run(test_mode=False)
+        if args.name == "rode":
+            episode_batch = runner.run(test_mode=False)
+        else:
+            episode_batch = runner.run_qmix(test_mode=False)
         buffer.insert_episode_batch(episode_batch)
 
         print(runner.t_env)

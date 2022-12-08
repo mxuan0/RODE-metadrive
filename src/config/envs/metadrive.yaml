@@ -5,6 +5,9 @@ env_args:
   discrete_throttle_dim: 5
   discrete_action: True
   env_name: "bottleneck"
+  allow_respawn: True
+  global_termination: True
+  episode_limit: 200
 
 test_greedy: True
 test_nepisode: 32
